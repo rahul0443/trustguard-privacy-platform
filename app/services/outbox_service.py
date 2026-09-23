@@ -1,7 +1,13 @@
+import logging
+from datetime import UTC, datetime
+
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.security import generate_audit_checksum
 from app.models.privacy import AuditTrail, DataSubject, OutboxEvent
+
+logger = logging.getLogger(__name__)
 
 class OutboxService:
     """Implements Transactional Outbox Pattern to ensure reliable audit logging."""
@@ -16,7 +22,7 @@ class OutboxService:
                 db.add(subject)
                 db.flush()
 
-            now_str = str(db.execute(Session.object_session(subject).text("SELECT CURRENT_TIMESTAMP")).scalar() if hasattr(db, 'execute') else "now")
+            now_str = datetime.now(UTC).isoformat()
             checksum = generate_audit_checksum(subject.id, action, now_str)
 
             audit = AuditTrail(
@@ -35,6 +41,7 @@ class OutboxService:
             db.add(outbox)
             db.commit()
             return audit, outbox
-        except Exception:
+        except SQLAlchemyError:
+            logger.warning("Failed to record audit/outbox event for %s", external_subject_id, exc_info=True)
             db.rollback()
             return None, None

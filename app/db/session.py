@@ -1,9 +1,13 @@
+import logging
 import os
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 # Graceful DB fallback: If Postgres is not reachable, fallback to SQLite for zero-setup local runs
 db_url = settings.DATABASE_URL
@@ -15,7 +19,8 @@ try:
         engine = create_engine(db_url, connect_args={"check_same_thread": False})
     else:
         engine = create_engine(db_url, pool_pre_ping=True, pool_size=10, max_overflow=20)
-except Exception:
+except (SQLAlchemyError, ImportError):
+    logger.warning("Falling back to SQLite: could not create engine for configured DATABASE_URL", exc_info=True)
     engine = create_engine("sqlite:///./trustguard.db", connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

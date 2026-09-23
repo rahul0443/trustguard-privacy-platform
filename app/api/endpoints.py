@@ -1,6 +1,7 @@
 import json
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
@@ -23,7 +24,7 @@ consent_service = ConsentService()
 outbox_service = OutboxService()
 
 @router.post("/privacy/evaluate", response_model=PIIEvaluationResponse, status_code=status.HTTP_200_OK)
-def evaluate_privacy_payload(request: PIIEvaluationRequest, db: Session = Depends(get_db)):
+def evaluate_privacy_payload(request: PIIEvaluationRequest, db: Annotated[Session, Depends(get_db)]):
     has_pii, findings, sanitized = classifier.evaluate_payload(request.payload)
     
     PII_EVALUATION_COUNTER.labels(status="SUCCESS").inc()
@@ -47,11 +48,11 @@ def evaluate_privacy_payload(request: PIIEvaluationRequest, db: Session = Depend
         findings_count=len(findings),
         findings=findings,
         sanitized_payload=sanitized,
-        evaluated_at=datetime.utcnow()
+        evaluated_at=datetime.now(UTC)
     )
 
 @router.post("/consent/enforce", response_model=ConsentCheckResponse, status_code=status.HTTP_200_OK)
-def enforce_consent(request: ConsentCheckRequest, db: Session = Depends(get_db)):
+def enforce_consent(request: ConsentCheckRequest, db: Annotated[Session, Depends(get_db)]):
     result = consent_service.check_consent(db, request.data_subject_id, request.scope)
     decision = "ALLOWED" if result.allowed else "BLOCKED"
     CONSENT_ENFORCE_COUNTER.labels(decision=decision).inc()

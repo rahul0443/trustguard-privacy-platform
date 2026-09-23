@@ -1,13 +1,13 @@
 import re
-from typing import Any
+from typing import Any, ClassVar
 
 from app.schemas.privacy import PIIFinding
 
 
 class PIIClassifier:
     """Production PII regex classifier enforcing data privacy classification."""
-    
-    PATTERNS = {
+
+    PATTERNS: ClassVar[dict[str, tuple[str, str]]] = {
         "SSN": (r"\b\d{3}-\d{2}-\d{4}\b", "[REDACTED-SSN]"),
         "EMAIL": (r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "[REDACTED-EMAIL]"),
         "PHONE": (r"\b(?:\+?1[-. ]?)?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}\b", "[REDACTED-PHONE]"),

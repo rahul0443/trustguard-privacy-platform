@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
+
 class DataSubject(Base):
     __tablename__ = "data_subjects"
 

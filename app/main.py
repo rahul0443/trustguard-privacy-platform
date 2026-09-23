@@ -1,16 +1,21 @@
+import logging
+
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.endpoints import router as api_router
 from app.core.config import settings
 from app.db.session import Base, engine
 
+logger = logging.getLogger(__name__)
+
 # Auto-create tables for dev/testing
 try:
     Base.metadata.create_all(bind=engine)
-except Exception:
-    pass
+except SQLAlchemyError:
+    logger.warning("Auto-create tables skipped: schema creation failed", exc_info=True)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
