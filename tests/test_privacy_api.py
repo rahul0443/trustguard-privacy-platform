@@ -4,6 +4,12 @@ from app.main import app
 
 client = TestClient(app)
 
+def test_root_serves_interactive_sandbox():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "TrustGuard" in response.text
+
 def test_liveness_probe():
     response = client.get("/health/live")
     assert response.status_code == 200

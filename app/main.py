@@ -1,7 +1,9 @@
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -11,6 +13,11 @@ from app.core.config import settings
 from app.db.session import Base, engine
 
 logger = logging.getLogger(__name__)
+
+# The interactive sandbox (also published separately to GitHub Pages) ships in the
+# same repo and is already copied into the Docker image -- serve it at the backend's
+# own root too, so the bare API domain isn't a dead end if anyone visits it directly.
+_SANDBOX_HTML_PATH = Path(__file__).resolve().parent.parent / "index.html"
 
 # Auto-create tables for dev/testing
 try:
@@ -33,6 +40,17 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+@app.get("/", include_in_schema=False)
+def root():
+    if _SANDBOX_HTML_PATH.is_file():
+        return FileResponse(_SANDBOX_HTML_PATH, media_type="text/html")
+    return {
+        "service": settings.PROJECT_NAME,
+        "docs": f"{settings.API_V1_STR}/openapi.json",
+        "interactive_docs": "/docs",
+        "health": "/health/live",
+    }
 
 @app.get("/health/live", tags=["Probes"])
 def liveness_probe():
