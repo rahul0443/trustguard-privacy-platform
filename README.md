@@ -191,10 +191,10 @@ Signs every audit trail entry with a secret-keyed HMAC-SHA256 signature calculat
 }
 ```
 
-**Response (`200 OK`):**
+**Response (`200 OK`)** — captured from the live deployment, not hand-written:
 ```json
 {
-  "evaluation_id": "eval_4f89a2b1c3d4",
+  "evaluation_id": "eval_ab7248127906",
   "data_subject_id": "sub_usr_998877",
   "has_pii": true,
   "findings_count": 3,
@@ -210,6 +210,12 @@ Signs every audit trail entry with a secret-keyed HMAC-SHA256 signature calculat
       "pii_type": "SSN",
       "confidence_score": 0.99,
       "masked_value": "[REDACTED-SSN]"
+    },
+    {
+      "field_path": "phone",
+      "pii_type": "PHONE",
+      "confidence_score": 0.99,
+      "masked_value": "[REDACTED-PHONE]"
     }
   ],
   "sanitized_payload": {
@@ -218,9 +224,18 @@ Signs every audit trail entry with a secret-keyed HMAC-SHA256 signature calculat
     "ssn": "[REDACTED-SSN]",
     "phone": "[REDACTED-PHONE]"
   },
-  "evaluated_at": "2026-09-22T21:15:00.000Z"
+  "evaluated_at": "2026-09-23T08:38:15.612972Z",
+  "audit_checksum": "8aa63238fc424221135bff7f733dbdec6a0ee214c353546f8c8e73af709a3069"
 }
 ```
+
+Try it yourself:
+```bash
+curl -X POST https://trustguard-privacy-platform.onrender.com/api/v1/privacy/evaluate \
+  -H "Content-Type: application/json" \
+  -d '{"data_subject_id": "sub_usr_998877", "payload": {"user_name": "Alice Johnson", "email": "alice.johnson@amazon.com", "ssn": "123-45-6789", "phone": "623-280-6332"}}'
+```
+(The free-tier instance sleeps after inactivity; the first request after idle can take up to ~50s to wake it.)
 
 ---
 
