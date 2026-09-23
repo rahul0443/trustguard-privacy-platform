@@ -34,7 +34,7 @@ def evaluate_privacy_payload(request: PIIEvaluationRequest, db: Annotated[Sessio
     eval_id = f"eval_{uuid.uuid4().hex[:12]}"
     
     # Audit log via Transactional Outbox Pattern
-    outbox_service.record_audit_and_outbox(
+    audit, _outbox = outbox_service.record_audit_and_outbox(
         db,
         external_subject_id=request.data_subject_id,
         action="PII_EVALUATION",
@@ -48,7 +48,8 @@ def evaluate_privacy_payload(request: PIIEvaluationRequest, db: Annotated[Sessio
         findings_count=len(findings),
         findings=findings,
         sanitized_payload=sanitized,
-        evaluated_at=datetime.now(UTC)
+        evaluated_at=datetime.now(UTC),
+        audit_checksum=audit.hash_checksum if audit else None
     )
 
 @router.post("/consent/enforce", response_model=ConsentCheckResponse, status_code=status.HTTP_200_OK)

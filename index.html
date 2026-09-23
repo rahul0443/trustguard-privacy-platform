@@ -208,21 +208,24 @@
 
     <div class="metrics-summary-grid">
       <div class="stat-box">
-        <div class="stat-number" id="stat-evals" style="color: var(--accent-emerald);">2,891</div>
-        <div class="stat-label">Payloads Evaluated</div>
+        <div class="stat-number" id="stat-evals" style="color: var(--accent-emerald);">0</div>
+        <div class="stat-label">Payloads Evaluated This Session</div>
       </div>
       <div class="stat-box">
-        <div class="stat-number" id="stat-findings" style="color: var(--accent-rose);">542</div>
-        <div class="stat-label">PII Elements Redacted</div>
+        <div class="stat-number" id="stat-findings" style="color: var(--accent-rose);">0</div>
+        <div class="stat-label">PII Elements Redacted This Session</div>
       </div>
       <div class="stat-box">
-        <div class="stat-number" id="stat-audits" style="color: var(--accent-cyan);">2,891</div>
-        <div class="stat-label">Audit Outbox Events Signed</div>
+        <div class="stat-number" id="stat-audits" style="color: var(--accent-cyan);">0</div>
+        <div class="stat-label">Audit Outbox Events Signed This Session</div>
       </div>
       <div class="stat-box">
-        <div class="stat-number" id="stat-latency" style="color: var(--accent-amber);">&lt;4ms</div>
-        <div class="stat-label">Evaluation Latency p99</div>
+        <div class="stat-number" id="stat-latency" style="color: var(--accent-amber);">&mdash;</div>
+        <div class="stat-label">Last Request Latency (Round-Trip)</div>
       </div>
+    </div>
+    <div id="backend-status" style="font-size: 0.8rem; color: var(--text-muted); padding: 0 0.25rem;">
+      Connecting to live backend&hellip;
     </div>
 
     <div class="dashboard-grid">
@@ -264,7 +267,7 @@
         <div class="form-group">
           <label class="form-label">HMAC Audit Trail Signature</label>
           <div id="hmac-signature" style="font-family: var(--font-code); font-size:0.75rem; color: var(--accent-emerald); background: rgba(7,11,20,0.6); padding: 0.5rem; border-radius: 6px; word-break: break-all;">
-            e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            (run an evaluation to see the real server-computed signature)
           </div>
         </div>
       </div>
@@ -298,45 +301,68 @@
   </main>
 
   <script>
-    let evalsCount = 2891;
-    let findingsCount = 542;
+    // Live backend. This page makes real HTTP calls to the deployed FastAPI
+    // service below -- nothing here is simulated or hardcoded.
+    const API_BASE = "__API_BASE__";
 
-    function runPIIEvaluation() {
-      evalsCount++;
+    let evalsCount = 0;
+    let findingsCount = 0;
+    let auditsCount = 0;
+    const pieCounts = { SSN: 0, EMAIL: 0, PHONE: 0, CREDIT_CARD: 0 };
+    const pieLabels = { SSN: 'Social Security Numbers (SSN)', EMAIL: 'Email Addresses', PHONE: 'Phone Numbers', CREDIT_CARD: 'Credit Card Numbers' };
+    let chart;
+
+    async function runPIIEvaluation() {
       const subjectId = document.getElementById('subject-id').value;
       const rawText = document.getElementById('json-input').value;
-      
+      const btn = document.querySelector('.btn-emerald');
+
+      let obj;
       try {
-        const obj = JSON.parse(rawText);
-        let sanitized = { ...obj };
-        let foundTypes = [];
-
-        if (sanitized.ssn) {
-          sanitized.ssn = "[REDACTED-SSN]";
-          foundTypes.push("SSN");
-          findingsCount++;
-        }
-        if (sanitized.email) {
-          sanitized.email = "[REDACTED-EMAIL]";
-          foundTypes.push("EMAIL");
-          findingsCount++;
-        }
-        if (sanitized.phone) {
-          sanitized.phone = "[REDACTED-PHONE]";
-          foundTypes.push("PHONE");
-          findingsCount++;
-        }
-
-        document.getElementById('json-output').value = JSON.stringify(sanitized, null, 2);
-
-        const fakeHmac = Array.from(new Uint8Array(32)).map(() => Math.floor(Math.random()*16).toString(16)).join('');
-        document.getElementById('hmac-signature').innerText = `hmac-sha256:${fakeHmac}`;
-
-        logEvent(`Evaluated payload for ${subjectId}. Detected ${foundTypes.length} PII fields (${foundTypes.join(', ')}). Created Outbox Event PRIVACY_AUDIT_EVALUATION.`);
-        updateStats();
-
+        obj = JSON.parse(rawText);
       } catch (err) {
         alert("Invalid JSON format in payload input.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Evaluating…";
+      const start = performance.now();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/privacy/evaluate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data_subject_id: subjectId, payload: obj })
+        });
+        const latencyMs = Math.round(performance.now() - start);
+
+        if (!res.ok) {
+          logEvent(`Request failed: HTTP ${res.status}`, true);
+          return;
+        }
+        const data = await res.json();
+
+        document.getElementById('json-output').value = JSON.stringify(data.sanitized_payload, null, 2);
+        document.getElementById('hmac-signature').innerText = data.audit_checksum
+          ? `hmac-sha256:${data.audit_checksum}`
+          : "(server-side audit write failed for this request)";
+
+        evalsCount++;
+        findingsCount += data.findings_count;
+        if (data.audit_checksum) auditsCount++;
+        data.findings.forEach(f => { if (pieCounts[f.pii_type] !== undefined) pieCounts[f.pii_type]++; });
+
+        updateStats(latencyMs);
+        updateChart();
+
+        const types = data.findings.map(f => f.pii_type).join(', ') || 'none';
+        logEvent(`Evaluated payload for ${data.data_subject_id} in ${latencyMs}ms via live backend. Detected ${data.findings_count} PII field(s) (${types}). Evaluation ID: ${data.evaluation_id}.`);
+      } catch (err) {
+        logEvent(`Network error reaching live backend: ${err.message}. Render's free tier sleeps after inactivity and can take ~50s to wake up on the first request -- try again.`, true);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Analyze & Redact PII";
       }
     }
 
@@ -350,14 +376,14 @@
       }, null, 2);
     }
 
-    function logEvent(msg) {
+    function logEvent(msg, isError) {
       const terminal = document.getElementById('terminal');
       const timeStr = new Date().toLocaleTimeString();
       const line = document.createElement('div');
       line.className = 'terminal-line';
       line.innerHTML = `
         <span class="log-time">[${timeStr}]</span>
-        <span class="log-status">AUDIT_OK 200</span>
+        <span class="log-status" style="${isError ? 'color: var(--accent-rose);' : ''}">${isError ? 'ERROR' : 'AUDIT_OK 200'}</span>
         <span class="log-msg">${msg}</span>
       `;
       terminal.appendChild(line);
@@ -368,19 +394,27 @@
       document.getElementById('terminal').innerHTML = '';
     }
 
-    function updateStats() {
+    function updateStats(latencyMs) {
       document.getElementById('stat-evals').innerText = evalsCount.toLocaleString();
       document.getElementById('stat-findings').innerText = findingsCount.toLocaleString();
-      document.getElementById('stat-audits').innerText = evalsCount.toLocaleString();
+      document.getElementById('stat-audits').innerText = auditsCount.toLocaleString();
+      if (typeof latencyMs === 'number') {
+        document.getElementById('stat-latency').innerText = `${latencyMs}ms`;
+      }
+    }
+
+    function updateChart() {
+      chart.data.datasets[0].data = Object.keys(pieLabels).map(k => pieCounts[k]);
+      chart.update();
     }
 
     const ctx = document.getElementById('piiChart').getContext('2d');
-    new Chart(ctx, {
+    chart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Social Security Numbers (SSN)', 'Email Addresses', 'Phone Numbers', 'Credit Card Numbers'],
+        labels: Object.values(pieLabels),
         datasets: [{
-          data: [210, 185, 110, 37],
+          data: [0, 0, 0, 0],
           backgroundColor: ['#F43F5E', '#38BDF8', '#10B981', '#F59E0B'],
           borderWidth: 0
         }]
@@ -394,7 +428,21 @@
       }
     });
 
-    runPIIEvaluation();
+    // Ping the live backend on load so the badge reflects real reachability.
+    (async () => {
+      const statusEl = document.getElementById('backend-status');
+      try {
+        const res = await fetch(`${API_BASE}/health/live`);
+        if (res.ok) {
+          statusEl.innerText = "Connected to live backend.";
+          logEvent("Connected to live TrustGuard backend. Click \"Analyze & Redact PII\" to send a real request.");
+        } else {
+          statusEl.innerText = `Backend reachable but unhealthy (HTTP ${res.status}).`;
+        }
+      } catch (err) {
+        statusEl.innerText = "Backend is waking up (Render free tier sleeps when idle) -- click Analyze to send the first request, it may take up to ~50s.";
+      }
+    })();
   </script>
 </body>
 </html>

@@ -36,6 +36,8 @@ def test_evaluate_pii_payload():
     assert data["findings_count"] == 2
     assert "[REDACTED-EMAIL]" in data["sanitized_payload"]["email"]
     assert "[REDACTED-SSN]" in data["sanitized_payload"]["ssn"]
+    assert data["audit_checksum"] is not None
+    assert len(data["audit_checksum"]) == 64  # HMAC-SHA256 hex digest
 
 def test_enforce_consent():
     payload = {

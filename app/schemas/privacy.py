@@ -23,6 +23,7 @@ class PIIEvaluationResponse(BaseModel):
     findings: list[PIIFinding]
     sanitized_payload: dict[str, Any]
     evaluated_at: datetime
+    audit_checksum: str | None = None
 
 class ConsentCheckRequest(BaseModel):
     data_subject_id: str

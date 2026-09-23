@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: trustguard-privacy-platform
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health/live
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
