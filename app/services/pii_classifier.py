@@ -1,7 +1,8 @@
 import re
-import uuid
-from typing import Dict, Any, List, Tuple
+from typing import Any
+
 from app.schemas.privacy import PIIFinding
+
 
 class PIIClassifier:
     """Production PII regex classifier enforcing data privacy classification."""
@@ -13,8 +14,8 @@ class PIIClassifier:
         "CREDIT_CARD": (r"\b(?:\d[ -]*?){13,16}\b", "[REDACTED-CARD]"),
     }
 
-    def evaluate_payload(self, payload: Dict[str, Any]) -> Tuple[bool, List[PIIFinding], Dict[str, Any]]:
-        findings: List[PIIFinding] = []
+    def evaluate_payload(self, payload: dict[str, Any]) -> tuple[bool, list[PIIFinding], dict[str, Any]]:
+        findings: list[PIIFinding] = []
         sanitized = {}
 
         for key, val in payload.items():
@@ -37,3 +38,4 @@ class PIIClassifier:
 
         has_pii = len(findings) > 0
         return has_pii, findings, sanitized
+

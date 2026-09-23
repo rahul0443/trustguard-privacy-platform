@@ -1,19 +1,21 @@
 import json
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
+
+from app.core.metrics import CONSENT_ENFORCE_COUNTER, PII_EVALUATION_COUNTER, PII_FINDINGS_COUNTER
 from app.db.session import get_db
 from app.schemas.privacy import (
+    ConsentCheckRequest,
+    ConsentCheckResponse,
     PIIEvaluationRequest,
     PIIEvaluationResponse,
-    ConsentCheckRequest,
-    ConsentCheckResponse
 )
-from app.services.pii_classifier import PIIClassifier
 from app.services.consent_service import ConsentService
 from app.services.outbox_service import OutboxService
-from app.core.metrics import PII_EVALUATION_COUNTER, PII_FINDINGS_COUNTER, CONSENT_ENFORCE_COUNTER
+from app.services.pii_classifier import PIIClassifier
 
 router = APIRouter()
 classifier = PIIClassifier()

@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+
 from app.models.privacy import DataSubject
 from app.schemas.privacy import ConsentCheckResponse
 

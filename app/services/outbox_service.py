@@ -1,7 +1,7 @@
-import json
 from sqlalchemy.orm import Session
-from app.models.privacy import OutboxEvent, AuditTrail, DataSubject
+
 from app.core.security import generate_audit_checksum
+from app.models.privacy import AuditTrail, DataSubject, OutboxEvent
 
 class OutboxService:
     """Implements Transactional Outbox Pattern to ensure reliable audit logging."""

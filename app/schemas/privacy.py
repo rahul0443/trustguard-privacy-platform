@@ -1,10 +1,12 @@
-from pydantic import BaseModel, Field
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from typing import Any
+
+from pydantic import BaseModel, Field
+
 
 class PIIEvaluationRequest(BaseModel):
     data_subject_id: str = Field(..., example="sub_usr_998877")
-    payload: Dict[str, Any] = Field(..., example={"email": "alice@amazon.com", "ssn": "123-45-6789", "age": 28})
+    payload: dict[str, Any] = Field(..., example={"email": "alice@amazon.com", "ssn": "123-45-6789", "age": 28})
     strict_mode: bool = Field(default=True)
 
 class PIIFinding(BaseModel):
@@ -18,8 +20,8 @@ class PIIEvaluationResponse(BaseModel):
     data_subject_id: str
     has_pii: bool
     findings_count: int
-    findings: List[PIIFinding]
-    sanitized_payload: Dict[str, Any]
+    findings: list[PIIFinding]
+    sanitized_payload: dict[str, Any]
     evaluated_at: datetime
 
 class ConsentCheckRequest(BaseModel):
@@ -31,3 +33,4 @@ class ConsentCheckResponse(BaseModel):
     allowed: bool
     consent_status: str
     reason: str
+

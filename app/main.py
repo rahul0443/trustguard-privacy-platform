@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-from app.core.config import settings
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
 from app.api.endpoints import router as api_router
-from app.db.session import engine
-from app.db.session import Base
+from app.core.config import settings
+from app.db.session import Base, engine
 
 # Auto-create tables for dev/testing
 try:
