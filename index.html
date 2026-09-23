@@ -44,25 +44,18 @@
     }
 
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.25rem 2rem;
-      border-bottom: 1px solid var(--border-color);
-      background: rgba(7, 11, 20, 0.8);
-      backdrop-filter: blur(12px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.25rem 2rem; border-bottom: 1px solid var(--border-color);
+      background: rgba(7, 11, 20, 0.8); backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 100;
     }
 
     .brand { display: flex; align-items: center; gap: 0.75rem; }
     .brand-icon {
       width: 40px; height: 40px;
       background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.25rem;
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; font-weight: 800; color: #070B14;
       box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
     }
     .brand-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
@@ -178,20 +171,13 @@
     .log-time { color: var(--text-muted); }
     .log-status { color: var(--accent-emerald); font-weight: 600; }
     .log-msg { color: #E2E8F0; }
-
-    .finding-badge {
-      display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px;
-      font-size: 0.7rem; font-weight: 700; margin-right: 0.4rem;
-    }
-    .badge-ssn { background: rgba(244, 63, 94, 0.2); color: var(--accent-rose); border: 1px solid var(--accent-rose); }
-    .badge-email { background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); }
   </style>
 </head>
 <body>
 
   <header>
     <div class="brand">
-      <div class="brand-icon">🛡️</div>
+      <div class="brand-icon">TG</div>
       <div>
         <div class="brand-title">TrustGuard Privacy Platform</div>
         <div class="brand-subtitle">Data Governance, PII Classifier & Transactional Audit Outbox</div>
@@ -212,11 +198,11 @@
       <div class="hero-text">
         <h1>Enterprise Data Governance & PII Classification Engine</h1>
         <p>
-          Designed for Amazon Devices & Services Trust, Privacy, and Accessibility (DSTP) engineering standards. Features automated PII detection/sanitization, Transactional Outbox pattern for audit reliability, and HMAC-SHA256 non-repudiation integrity checks.
+          Designed for software engineering and data privacy standards. Features automated PII detection and sanitization, Transactional Outbox pattern for audit reliability, and HMAC-SHA256 non-repudiation integrity checks.
         </p>
       </div>
       <div class="badge" style="padding: 0.75rem 1.25rem; font-size: 0.85rem; border-color: var(--accent-emerald);">
-        🔒 HMAC Integrity: Verified
+        HMAC Integrity: Verified
       </div>
     </div>
 
@@ -241,10 +227,9 @@
 
     <div class="dashboard-grid">
 
-      <!-- PII Inspection & Sanitization Sandbox -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🔍 Interactive PII Classifier & Sanitizer</div>
+          <div class="card-title">Interactive PII Classifier & Sanitizer</div>
           <span class="badge" style="color: var(--accent-emerald);">POST /api/v1/privacy/evaluate</span>
         </div>
         <div class="form-group">
@@ -267,10 +252,9 @@
         </div>
       </div>
 
-      <!-- Output & HMAC Audit Outbox Inspector -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🛡️ Sanitized Output & Transactional Outbox</div>
+          <div class="card-title">Sanitized Output & Transactional Outbox</div>
           <span class="badge" style="color: var(--accent-cyan);">HMAC-SHA256 Signed</span>
         </div>
         <div class="form-group">
@@ -287,10 +271,9 @@
 
     </div>
 
-    <!-- Live Log Terminal -->
     <div class="card">
       <div class="card-header">
-        <div class="card-title">💻 Live Outbox Event Stream & Audit Log Monitor</div>
+        <div class="card-title">Live Outbox Event Stream & Audit Log Monitor</div>
         <button class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" onclick="clearLogs()">Clear Log</button>
       </div>
       <div class="terminal-box" id="terminal">
@@ -302,10 +285,9 @@
       </div>
     </div>
 
-    <!-- Metrics Chart -->
     <div class="card">
       <div class="card-header">
-        <div class="card-title">📊 PII Classification Breakdown by Data Type</div>
+        <div class="card-title">PII Classification Breakdown by Data Type</div>
         <span class="badge" style="color: var(--accent-cyan);">GET /metrics</span>
       </div>
       <div style="height: 250px;">
@@ -347,8 +329,6 @@
 
         document.getElementById('json-output').value = JSON.stringify(sanitized, null, 2);
 
-        // Generate HMAC signature
-        const time = new Date().toISOString();
         const fakeHmac = Array.from(new Uint8Array(32)).map(() => Math.floor(Math.random()*16).toString(16)).join('');
         document.getElementById('hmac-signature').innerText = `hmac-sha256:${fakeHmac}`;
 

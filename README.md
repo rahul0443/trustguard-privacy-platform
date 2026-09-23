@@ -1,4 +1,4 @@
-# 🛡️ TrustGuard Privacy Platform
+# TrustGuard Privacy Platform
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Interactive_Sandbox-10B981?style=for-the-badge&logo=googlechrome&logoColor=white)](https://rahul0443.github.io/trustguard-privacy-platform/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-GitHub_Actions_Passing-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/rahul0443/trustguard-privacy-platform/actions)
@@ -8,39 +8,39 @@
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-> **Live Web Interactive Control Plane:** [https://rahul0443.github.io/trustguard-privacy-platform/](https://rahul0443.github.io/trustguard-privacy-platform/)
+Live Interactive Control Plane: [https://rahul0443.github.io/trustguard-privacy-platform/](https://rahul0443.github.io/trustguard-privacy-platform/)
 
-An enterprise-grade **Data Privacy Governance, PII Classifier & Audit Outbox Platform**. Built specifically to adhere to Amazon Devices & Services Trust, Privacy, and Accessibility (DSTP) engineering standards: **automated PII data classification**, **transactional outbox dual-write guarantees**, and **HMAC-SHA256 audit integrity signatures**.
-
----
-
-## 📋 Table of Contents
-- [🌐 Live Web Interactive Sandbox](#-live-web-interactive-sandbox)
-- [🏗️ System Architecture & Data Flow](#️-system-architecture--data-flow)
-- [🔄 Transactional Outbox Sequence Diagram](#-transactional-outbox-sequence-diagram)
-- [🛢️ Entity-Relationship (ER) Database Model](#️-entity-relationship-er-database-model)
-- [✨ Key Engineering Highlights](#-key-engineering-highlights)
-- [📡 API Reference & JSON Samples](#-api-reference--json-samples)
-- [📐 Architecture Trade-Off Analysis](#-architecture-trade-off-analysis)
-- [📊 Observability & Operational Excellence](#-observability--operational-excellence)
-- [🛠️ Local Installation & Docker Setup](#️-local-installation--docker-setup)
-- [🧪 Running PyTest Test Suite](#-running-pytest-test-suite)
-- [📄 License & Author](#-license--author)
+An enterprise-grade Data Privacy Governance, PII Classifier and Audit Outbox Platform. Built to adhere to software engineering and data privacy standards: automated PII data classification, transactional outbox dual-write guarantees, and HMAC-SHA256 audit integrity signatures.
 
 ---
 
-## 🌐 Live Web Interactive Sandbox
-
-Try out the live privacy classification engine directly in your browser:
-👉 **[Launch Live Privacy Sandbox](https://rahul0443.github.io/trustguard-privacy-platform/)**
-
-* **PII Sanitizer:** Input any JSON payload containing SSNs, Emails, or Phone Numbers and watch live redaction (`[REDACTED-SSN]`, `[REDACTED-EMAIL]`).
-* **HMAC Non-Repudiation Signer:** Generate tamper-proof HMAC-SHA256 checksum signatures for compliance audits.
-* **Outbox Monitor:** Inspect live transactional audit outbox event logs and Chart.js distribution breakdowns.
+## Table of Contents
+- [Live Web Interactive Sandbox](#live-web-interactive-sandbox)
+- [System Architecture and Data Flow](#system-architecture-and-data-flow)
+- [Transactional Outbox Sequence Diagram](#transactional-outbox-sequence-diagram)
+- [Entity-Relationship (ER) Database Model](#entity-relationship-er-database-model)
+- [Key Engineering Highlights](#key-engineering-highlights)
+- [API Reference and JSON Samples](#api-reference-and-json-samples)
+- [Architecture Trade-Off Analysis](#architecture-trade-off-analysis)
+- [Observability and Operational Excellence](#observability-and-operational-excellence)
+- [Local Installation and Docker Setup](#local-installation-and-docker-setup)
+- [Running PyTest Test Suite](#running-pytest-test-suite)
+- [License and Author](#license-and-author)
 
 ---
 
-## 🏗️ System Architecture & Data Flow
+## Live Web Interactive Sandbox
+
+Try out the live privacy classification engine directly in your browser:  
+[Launch Live Privacy Sandbox](https://rahul0443.github.io/trustguard-privacy-platform/)
+
+* PII Sanitizer: Input any JSON payload containing SSNs, Emails, or Phone Numbers and watch live redaction ([REDACTED-SSN], [REDACTED-EMAIL]).
+* HMAC Non-Repudiation Signer: Generate tamper-proof HMAC-SHA256 checksum signatures for compliance audits.
+* Outbox Monitor: Inspect live transactional audit outbox event logs and Chart.js distribution breakdowns.
+
+---
+
+## System Architecture and Data Flow
 
 ```mermaid
 flowchart TD
@@ -83,7 +83,7 @@ flowchart TD
 
 ---
 
-## 🔄 Transactional Outbox Sequence Diagram
+## Transactional Outbox Sequence Diagram
 
 Illustrates dual-write consistency without distributed lock overhead:
 
@@ -110,7 +110,7 @@ sequenceDiagram
 
 ---
 
-## 🛢️ Entity-Relationship (ER) Database Model
+## Entity-Relationship (ER) Database Model
 
 Relational PostgreSQL schema managed via SQLAlchemy 2.0 ORM:
 
@@ -156,24 +156,24 @@ erDiagram
 
 ---
 
-## ✨ Key Engineering Highlights
+## Key Engineering Highlights
 
-### 1. Automated PII Classifier & Data Masking
-Deterministic regular expression classifiers evaluating payload JSON structures for SSNs, emails, phone numbers, and credit card numbers, outputting sanitized JSON (`[REDACTED-SSN]`, `[REDACTED-EMAIL]`).
+### 1. Automated PII Classifier and Data Masking
+Deterministic regular expression classifiers evaluating payload JSON structures for SSNs, emails, phone numbers, and credit card numbers, outputting sanitized JSON ([REDACTED-SSN], [REDACTED-EMAIL]).
 
 ### 2. Transactional Outbox Pattern
 Guarantees dual-write consistency by persisting domain state changes and event logs into PostgreSQL within a single atomic SQL transaction, avoiding out-of-sync dual-write failures.
 
 ### 3. HMAC-SHA256 Audit Integrity
-Signs every audit trail entry with a secret-keyed HMAC-SHA256 signature calculated over `data_subject_id:action:timestamp` to ensure audit integrity and non-repudiation.
+Signs every audit trail entry with a secret-keyed HMAC-SHA256 signature calculated over data_subject_id:action:timestamp to ensure audit integrity and non-repudiation.
 
 ### 4. Operational Excellence (OE)
-* **Prometheus Metrics (`/metrics`):** Tracks PII evaluations count, findings by type, and consent decisions.
-* **Health Probes (`/health/live`, `/health/ready`):** Kubernetes liveness and readiness probes.
+* Prometheus Metrics (`/metrics`): Tracks PII evaluations count, findings by type, and consent decisions.
+* Health Probes (`/health/live`, `/health/ready`): Kubernetes liveness and readiness probes.
 
 ---
 
-## 📡 API Reference & JSON Samples
+## API Reference and JSON Samples
 
 ### Evaluate PII Payload
 `POST /api/v1/privacy/evaluate`
@@ -224,7 +224,7 @@ Signs every audit trail entry with a secret-keyed HMAC-SHA256 signature calculat
 
 ---
 
-## 📐 Architecture Trade-Off Analysis
+## Architecture Trade-Off Analysis
 
 | Choice | Alternative Considered | Rationale |
 | :--- | :--- | :--- |
@@ -233,7 +233,7 @@ Signs every audit trail entry with a secret-keyed HMAC-SHA256 signature calculat
 
 ---
 
-## 🛠️ Local Installation & Docker Setup
+## Local Installation and Docker Setup
 
 ```bash
 # Clone the repository
@@ -249,7 +249,7 @@ curl http://localhost:8000/health/live
 
 ---
 
-## 🧪 Running PyTest Test Suite
+## Running PyTest Test Suite
 
 ```bash
 # Install local dependencies
@@ -261,7 +261,7 @@ TESTING=1 pytest tests/ --cov=app
 
 ---
 
-## 📄 License & Author
+## License and Author
 
-Developed by **Rahul Muddhapuram** ([rmuddhap@asu.edu](mailto:rmuddhap@asu.edu)).
+Developed by Rahul Muddhapuram (rmuddhap@asu.edu).  
 Licensed under the [MIT License](LICENSE).
