@@ -38,6 +38,8 @@ Try out the live privacy classification engine directly in your browser:
 * HMAC Non-Repudiation Signer: Generate tamper-proof HMAC-SHA256 checksum signatures for compliance audits.
 * Outbox Monitor: Inspect live transactional audit outbox event logs and Chart.js distribution breakdowns.
 
+**Database note**: the app is written against PostgreSQL via SQLAlchemy 2.0 (see `docker-compose.yml`, which runs a real Postgres container), but the live deployment above intentionally runs on its SQLite fallback -- `render.yaml` leaves `DATABASE_URL` unset on purpose, since Render's free tier has no persistent Postgres add-on. The diagrams and schema below describe the Postgres-oriented design; the live demo's data resets when the free instance restarts.
+
 ---
 
 ## System Architecture and Data Flow
