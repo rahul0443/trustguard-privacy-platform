@@ -1,0 +1,54 @@
+name: TrustGuard Privacy Platform CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Code Style Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pytest
+      - name: Run Ruff Linter
+        run: ruff check app/ tests/
+
+  test-suite:
+    name: PyTest Automated Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run PyTest
+        env:
+          DATABASE_URL: "sqlite:///./test.db"
+          SECRET_KEY: "ci-cd-test-secret"
+        run: pytest tests/ --cov=app
+
+  docker-build:
+    name: Docker Container Verification
+    needs: [lint-and-typecheck, test-suite]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker Image
+        run: docker build -t trustguard-privacy-platform:latest .
+      - name: Verify Docker Image
+        run: docker images | grep trustguard-privacy-platform
