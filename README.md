@@ -255,7 +255,7 @@ curl -X POST https://trustguard-privacy-platform.onrender.com/api/v1/privacy/eva
 git clone https://github.com/rahul0443/trustguard-privacy-platform.git
 cd trustguard-privacy-platform
 
-# Launch web app, PostgreSQL, and Redis via Docker Compose
+# Launch web app and PostgreSQL via Docker Compose
 docker-compose up --build -d
 
 # Verify liveness probe

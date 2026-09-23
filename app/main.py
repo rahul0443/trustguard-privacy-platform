@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.endpoints import router as api_router
@@ -38,8 +39,16 @@ def liveness_probe():
     return {"status": "UP", "service": settings.PROJECT_NAME}
 
 @app.get("/health/ready", tags=["Probes"])
-def readiness_probe():
-    return {"status": "READY", "checks": {"database": "HEALTHY", "redis": "HEALTHY"}}
+def readiness_probe(response: Response):
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        db_status = "HEALTHY"
+    except SQLAlchemyError:
+        logger.warning("Readiness check: database unreachable", exc_info=True)
+        db_status = "UNHEALTHY"
+        response.status_code = 503
+    return {"status": "READY" if db_status == "HEALTHY" else "DEGRADED", "checks": {"database": db_status}}
 
 @app.get("/metrics", tags=["Telemetry"])
 def metrics_exporter():

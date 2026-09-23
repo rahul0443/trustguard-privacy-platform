@@ -16,10 +16,7 @@ class Settings(BaseSettings):
         "DATABASE_URL",
         f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:5432/{POSTGRES_DB}"
     )
-    
-    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
-    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
-    
+
     SECRET_KEY: str = os.getenv("SECRET_KEY", "trustguard-super-secret-hmac-key")
     
     class Config:
